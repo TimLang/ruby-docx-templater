@@ -1,6 +1,9 @@
+# -*- encoding : utf-8 -*-
 require 'rubygems'
 require 'nokogiri'
 require 'zipruby'
+require 'mini_magick'
+require 'base64'
 
 module DocxTemplater
   def log(str)
@@ -12,3 +15,4 @@ end
 
 require 'docx_templater/template_processor'
 require 'docx_templater/docx_creator'
+require 'docx_templater/image'
