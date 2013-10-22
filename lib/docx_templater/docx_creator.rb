@@ -43,7 +43,7 @@ module DocxTemplater
 
         generate_images_on_word(archive)
 
-        (0...n_entries).each do |i|
+        n_entries.times do |i|
           entry_name = template.get_name(i)
           template.fopen(entry_name) do |f|
             archive.add_buffer(entry_name, copy_or_template(entry_name, f))
