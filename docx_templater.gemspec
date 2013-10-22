@@ -1,20 +1,19 @@
 # encoding: utf-8
 
 Gem::Specification.new do |s|
-  s.name = "docx_templater"
+  s.name = "paper_docx_templater"
   s.version = File.read("lib/VERSION").strip
-
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.rubygems_version = "1.3.7"
 
-  s.authors = ["Jonathan Andrew Wolter"]
+  s.authors = ["Tim Lang"]
 
-  s.email = "jaw@jawspeak.com"
+  s.email = "langyong135@gmail.com"
 
-  s.date = "2011-12-10"
+  s.date = "2013-10-23"
   s.description = "A Ruby library to template Microsoft Word .docx files."
   s.summary = "Generates new Word .docx files based on a template file."
-  s.homepage = "https://github.com/jawspeak/ruby-docx-templater"
+  s.homepage = "https://github.com/TimLang/ruby-docx-templater"
 
   s.rdoc_options = ["--charset=UTF-8"]
   s.extra_rdoc_files = ["README.rdoc"]
