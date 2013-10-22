@@ -50,13 +50,23 @@ module DocxTemplater
     private
 
     def generate_paragraph document, key, value
-      document.gsub!("$#{key.to_s.upcase}$", excute_nested_image_with_text(value).join) 
+      document.gsub!("$#{key.to_s.upcase}$", excute_newline(value).join) 
     end
 
     def generate_each_paragraph document, key, value
-      document.gsub("$EACH:#{key.to_s.upcase}$", excute_nested_image_with_text(value).join) 
+      document.gsub("$EACH:#{key.to_s.upcase}$", excute_newline(value).join) 
     end
 
+
+    def excute_newline value
+      if value =~ /\${newline}/
+        value.split(/\${newline}/).inject([]) do |result, str|
+          result << PARAGRAPH_ROW.gsub(/\$text\$/, (excute_nested_image_with_text(str)).join)
+        end
+      else
+        [excute_nested_image_with_text(value)]
+      end
+    end
 
     def excute_nested_image_with_text value
       value.split(/(\${image\d+})/).inject([]) do |result, str|
@@ -65,9 +75,9 @@ module DocxTemplater
         else
           img = @cached_images[str.gsub(/\${(\w+)}/, '\1').to_sym]
           result << DRAWING_ROW.gsub(/\$embed_id\$/, img.embed_id)
-                      .gsub(/\$image_width\$/, get_word_image_dimension(img.width))
-                      .gsub(/\$image_height\$/, get_word_image_dimension(img.height))
-                      .gsub(/\$image_name\$/, 'tim') if img
+          .gsub(/\$image_width\$/, get_word_image_dimension(img.width))
+          .gsub(/\$image_height\$/, get_word_image_dimension(img.height))
+          .gsub(/\$image_name\$/, 'tim') if img
         end
       end
     end
@@ -122,14 +132,14 @@ module DocxTemplater
                 each_data[LOOP_PLACE_HOLDER].reverse.each_with_index do |e, i|
                   innards = [] if i == 0
                   obj_key = (each_key =~ /items_(.+)/i) ? each_key.gsub(/items_(.+)/i, $1).downcase : ''
-                  innards << BLANK_ROW
+                  #innards << BLANK_ROW
                   if e[:choice]
                     if e[:choice].class == Array
                       e[:choice].reverse.each do |c|
-                        innards << generate_each_paragraph(@items_cache[cache_key], each_key, safe(c)) 
+                        innards << generate_each_paragraph(@items_cache[cache_key].gsub(/(<w:t>.+<\/w:t>)/, "#{SPACE_TEXT}#{$1}"), each_key, safe(c)) 
                       end
                     else
-                      innards << generate_each_paragraph(@items_cache[cache_key], each_key, safe(e[:choice])) 
+                      innards << generate_each_paragraph(@items_cache[cache_key].gsub(/(<w:t>.+<\/w:t>)/, "#{SPACE_TEXT}#{$1}"), each_key, safe(e[:choice])) 
                     end
                   end
                   innards << generate_each_paragraph(@items_cache[cache_key], each_key, safe(e[obj_key.to_sym]))
@@ -155,6 +165,9 @@ module DocxTemplater
     end
 
     # hard coding, my god!
+
+    SPACE_TEXT = '<w:t xml:space="preserve">  </w:t>'
+
     BLANK_ROW = "<w:tr w:rsidR=\"00D779AB\" w:rsidTr=\"00B812D2\">\n        <w:tc>\n          <w:tcPr>\n            <w:tcW w:w=\"8522\" w:type=\"dxa\"/>\n          </w:tcPr>\n          <w:p w:rsidR=\"00D779AB\" w:rsidRDefault=\"00D779AB\" w:rsidP=\"00C44DF6\">\n            <w:pPr>\n              <w:rPr>\n                <w:rFonts w:hint=\"eastAsia\"/>\n              </w:rPr>\n            </w:pPr>\n            <w:r>\n              <w:rPr>\n                <w:rFonts w:hint=\"eastAsia\"/>\n              </w:rPr>\n              <w:t></w:t>\n            </w:r>\n          </w:p>\n        </w:tc>\n      </w:tr>"
 
     TEXT_ROW = '<w:r>
@@ -163,6 +176,13 @@ module DocxTemplater
               </w:rPr>
               <w:t>$text$</w:t>
             </w:r>'
+
+    PARAGRAPH_ROW = '<w:p w:rsidR="0019258A" w:rsidRDefault="00214805">
+	<w:pPr>
+		<w:rPr>
+			<w:rFonts w:hint="eastAsia"/>
+		</w:rPr>
+	</w:pPr>$text$</w:p>'
 
     DRAWING_ROW = '<w:r>
               <w:rPr>
