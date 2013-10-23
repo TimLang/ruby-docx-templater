@@ -59,8 +59,8 @@ module DocxTemplater
 
 
     def excute_newline value
-      if value =~ /\\n/
-        value.split(/\\n/).inject([]) do |result, str|
+      if value =~ /\n/
+        value.split(/\n/).inject([]) do |result, str|
           result << PARAGRAPH_ROW.gsub(/\$text\$/, (excute_nested_image_with_text(str)).join)
         end
       else
