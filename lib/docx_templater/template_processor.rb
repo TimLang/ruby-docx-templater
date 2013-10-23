@@ -54,7 +54,7 @@ module DocxTemplater
     end
 
     def generate_each_paragraph document, key, value
-      document.gsub("$EACH:#{key.to_s.upcase}$", excute_newline(value).join) 
+      document.gsub("$EACH:#{key.to_s.upcase}$", excute_newline(value).join)
     end
 
 
@@ -128,18 +128,18 @@ module DocxTemplater
               #DocxTemplater::log("      each_key: #{each_key}")
               if each_key =~ /items_(.+)/i 
                 cache_key = each_key.to_sym
-                @items_cache[cache_key] = innards
+                @items_cache[cache_key] = TR_WRAPPER_ROW.gsub(/\$text\$/, innards)
                 each_data[LOOP_PLACE_HOLDER].reverse.each_with_index do |e, i|
                   innards = [] if i == 0
                   obj_key = (each_key =~ /items_(.+)/i) ? each_key.gsub(/items_(.+)/i, $1).downcase : ''
-                  #innards << BLANK_ROW
+                  innards << BLANK_ROW
                   if e[:choice]
                     if e[:choice].class == Array
                       e[:choice].reverse.each do |c|
-                        innards << generate_each_paragraph(@items_cache[cache_key].gsub(/(<w:t>.+<\/w:t>)/, "#{SPACE_TEXT}#{$1}"), each_key, safe(c)) 
+                        innards << generate_each_paragraph(@items_cache[cache_key], each_key, safe(c))
                       end
                     else
-                      innards << generate_each_paragraph(@items_cache[cache_key].gsub(/(<w:t>.+<\/w:t>)/, "#{SPACE_TEXT}#{$1}"), each_key, safe(e[:choice])) 
+                      innards << generate_each_paragraph(@items_cache[cache_key], each_key, safe(e[:choice]))
                     end
                   end
                   innards << generate_each_paragraph(@items_cache[cache_key], each_key, safe(e[obj_key.to_sym]))
@@ -169,6 +169,8 @@ module DocxTemplater
     SPACE_TEXT = '<w:t xml:space="preserve">  </w:t>'
 
     BLANK_ROW = "<w:tr w:rsidR=\"00D779AB\" w:rsidTr=\"00B812D2\">\n        <w:tc>\n          <w:tcPr>\n            <w:tcW w:w=\"8522\" w:type=\"dxa\"/>\n          </w:tcPr>\n          <w:p w:rsidR=\"00D779AB\" w:rsidRDefault=\"00D779AB\" w:rsidP=\"00C44DF6\">\n            <w:pPr>\n              <w:rPr>\n                <w:rFonts w:hint=\"eastAsia\"/>\n              </w:rPr>\n            </w:pPr>\n            <w:r>\n              <w:rPr>\n                <w:rFonts w:hint=\"eastAsia\"/>\n              </w:rPr>\n              <w:t></w:t>\n            </w:r>\n          </w:p>\n        </w:tc>\n      </w:tr>"
+
+    TR_WRAPPER_ROW = '\n <w:tr w:rsidR="004D5284" w:rsidTr="004D5284">\n $text$ </w:tr>\n'
 
     TEXT_ROW = '<w:r>
               <w:rPr>

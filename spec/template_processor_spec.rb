@@ -13,22 +13,52 @@ module DocxTemplater
           :items => [
             {
               :content => '1. 人在恐惧、紧张时，在内脏神经的支配下，肾上腺髓质释放的肾上腺素增多，该激素可用于心脏，使心率加快。下列叙述错误的是${image2}（    ）',
-              :choice => [
-                '  A．该肾上腺素作用的靶器官包括心脏',
-                '  B．该实例包含神经调节和体液调节',
-                '  C．该肾上腺素通过神经纤维运输到心脏',
-                '  D．该实例中反射弧是实现神经调节的结构基础'
-              ]
+              :choice => ["A.sticks to them in their daily life", "B.makes them known to others", "C.understands their true values", "D.sees that others also follow them"]
             },
             {
               :content => '2. 番茄幼苗在缺镁的培养液中培养一段时间后，与对照组相比，其叶片光合作用强度下降，原因是（    ）',
-              :choice => [
-                '  A．光反应强度升高，暗反应强度降低',
-                '  B．光反应强度降低，暗反应强度降低',
-                '  C．反应强度不变，暗反应强度降低',
-                '  D．反应强度降低，暗反应强度不变'
-              ]
-            }
+              :choice => ["A.She wants to take the most direct way.", "B.She may be late for the football game.", "C.She is worried about missing her flight.", "D.She is currently caught in a traffic jam."]
+            },
+            {
+              :content => '2. 番茄幼苗在缺镁的培养液中培养一段时间后，与对照组相比，其叶片光合作用强度下降，原因是（    ）',
+              :choice => ["A.She wants to take the most direct way.", "B.She may be late for the football game.", "C.She is worried about missing her flight.", "D.She is currently caught in a traffic jam."]
+            },
+            {
+              :content => '2. 番茄幼苗在缺镁的培养液中培养一段时间后，与对照组相比，其叶片光合作用强度下降，原因是（    ）',
+              :choice => ["A.She wants to take the most direct way.", "B.She may be late for the football game.", "C.She is worried about missing her flight.", "D.She is currently caught in a traffic jam."]
+            },
+            {
+              :content => '2. 番茄幼苗在缺镁的培养液中培养一段时间后，与对照组相比，其叶片光合作用强度下降，原因是（    ）',
+              :choice => ["A.She wants to take the most direct way.", "B.She may be late for the football game.", "C.She is worried about missing her flight.", "D.She is currently caught in a traffic jam."]
+            },
+            {
+              :content => '2. 番茄幼苗在缺镁的培养液中培养一段时间后，与对照组相比，其叶片光合作用强度下降，原因是（    ）',
+              :choice => ["A.She wants to take the most direct way.", "B.She may be late for the football game.", "C.She is worried about missing her flight.", "D.She is currently caught in a traffic jam."]
+            },
+            {
+              :content => '2. 番茄幼苗在缺镁的培养液中培养一段时间后，与对照组相比，其叶片光合作用强度下降，原因是（    ）',
+              :choice => ["A.She wants to take the most direct way.", "B.She may be late for the football game.", "C.She is worried about missing her flight.", "D.She is currently caught in a traffic jam."]
+            },
+            {
+              :content => '2. 番茄幼苗在缺镁的培养液中培养一段时间后，与对照组相比，其叶片光合作用强度下降，原因是（    ）',
+              :choice => ["A.She wants to take the most direct way.", "B.She may be late for the football game.", "C.She is worried about missing her flight.", "D.She is currently caught in a traffic jam."]
+            },
+            {
+              :content => '2. 番茄幼苗在缺镁的培养液中培养一段时间后，与对照组相比，其叶片光合作用强度下降，原因是（    ）',
+              :choice => ["A.She wants to take the most direct way.", "B.She may be late for the football game.", "C.She is worried about missing her flight.", "D.She is currently caught in a traffic jam."]
+            },
+            {
+              :content => '2. 番茄幼苗在缺镁的培养液中培养一段时间后，与对照组相比，其叶片光合作用强度下降，原因是（    ）',
+              :choice => ["A.She wants to take the most direct way.", "B.She may be late for the football game.", "C.She is worried about missing her flight.", "D.She is currently caught in a traffic jam."]
+            },
+            {
+              :content => '2. 番茄幼苗在缺镁的培养液中培养一段时间后，与对照组相比，其叶片光合作用强度下降，原因是（    ）',
+              :choice => ["A.She wants to take the most direct way.", "B.She may be late for the football game.", "C.She is worried about missing her flight.", "D.She is currently caught in a traffic jam."]
+            },
+            {
+              :content => '2. 番茄幼苗在缺镁的培养液中培养一段时间后，与对照组相比，其叶片光合作用强度下降，原因是（    ）',
+              :choice => ["A.She wants to take the most direct way.", "B.She may be late for the football game.", "C.She is worried about missing her flight.", "D.She is currently caught in a traffic jam."]
+            }  
           ]
         },
         {
