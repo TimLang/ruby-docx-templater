@@ -74,10 +74,14 @@ module DocxTemplater
           result << TEXT_ROW.gsub('$text$', safe(str))
         else
           img = @cached_images[str.gsub(/\${(\w+)}/, '\1').to_sym]
-          result << DRAWING_ROW.gsub(/\$embed_id\$/, img.embed_id)
-          .gsub(/\$image_width\$/, get_word_image_dimension(img.width))
-          .gsub(/\$image_height\$/, get_word_image_dimension(img.height))
-          .gsub(/\$image_name\$/, 'tim') if img
+          if img
+            result << DRAWING_ROW.gsub(/\$embed_id\$/, img.embed_id)
+              .gsub(/\$image_width\$/, get_word_image_dimension(img.width))
+              .gsub(/\$image_height\$/, get_word_image_dimension(img.height))
+              .gsub(/\$image_name\$/, 'tim')
+          else
+            result << TEXT_ROW.gsub('$text$', '')
+          end
         end
       end
     end
@@ -170,7 +174,7 @@ module DocxTemplater
 
     BLANK_ROW = "<w:tr w:rsidR=\"00D779AB\" w:rsidTr=\"00B812D2\">\n        <w:tc>\n          <w:tcPr>\n            <w:tcW w:w=\"8522\" w:type=\"dxa\"/>\n          </w:tcPr>\n          <w:p w:rsidR=\"00D779AB\" w:rsidRDefault=\"00D779AB\" w:rsidP=\"00C44DF6\">\n            <w:pPr>\n              <w:rPr>\n                <w:rFonts w:hint=\"eastAsia\"/>\n              </w:rPr>\n            </w:pPr>\n            <w:r>\n              <w:rPr>\n                <w:rFonts w:hint=\"eastAsia\"/>\n              </w:rPr>\n              <w:t></w:t>\n            </w:r>\n          </w:p>\n        </w:tc>\n      </w:tr>"
 
-    TR_WRAPPER_ROW = '\n <w:tr w:rsidR="004D5284" w:rsidTr="004D5284">\n $text$ </w:tr>\n'
+    TR_WRAPPER_ROW = "\n <w:tr w:rsidR=\"004D5284\" w:rsidTr=\"004D5284\">\n $text$ </w:tr>\n"
 
     TEXT_ROW = '<w:r>
               <w:rPr>

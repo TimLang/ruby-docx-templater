@@ -64,7 +64,7 @@ module DocxTemplater
       img.width = image['width']
       img.height = image['height']
 
-      image.format 'jpeg'
+      #image.format 'jpeg'
       image.to_blob
     end
 
