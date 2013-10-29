@@ -33,7 +33,7 @@ module DocxTemplater
       document = Nokogiri::XML(document)
 
       relationships = document.search('Relationships').first 
-      max_index = relationships.search('Relationship').map{|r| r['Id'].gsub!(/rId(\d+)/, '\1')}.max
+      max_index = relationships.search('Relationship').map{|r| r['Id'].gsub(/rId(\d+)/, '\1').to_i}.max
 
       images.each_with_index do |(k, img), i|
         node = Nokogiri::XML::Node.new('Relationship', document)
@@ -138,12 +138,14 @@ module DocxTemplater
                   obj_key = (each_key =~ /items_(.+)/i) ? each_key.gsub(/items_(.+)/i, $1).downcase : ''
                   innards << BLANK_ROW
                   if e[:choice]
+                    #indentation for choices
+                    tpl = @items_cache[cache_key].sub('<w:pPr>', " <w:pPr>\n        <w:ind w:leftChars=\"100\" w:left=\"180\"/>")
                     if e[:choice].class == Array
                       e[:choice].reverse.each do |c|
-                        innards << generate_each_paragraph(@items_cache[cache_key], each_key, safe(c))
+                        innards << generate_each_paragraph(tpl, each_key, safe(c))
                       end
                     else
-                      innards << generate_each_paragraph(@items_cache[cache_key], each_key, safe(e[:choice]))
+                      innards << generate_each_paragraph(tpl, each_key, safe(e[:choice]))
                     end
                   end
                   innards << generate_each_paragraph(@items_cache[cache_key], each_key, safe(e[obj_key.to_sym]))
