@@ -35,7 +35,7 @@ Gem::Specification.new do |s|
   # THIS gem is not installed to rubyforge. Thus, you MUST on your own, in your Gemspec, add a dependency
   # to zipruby-compat. Example:
   #   gem "zipruby-compat", :git => "git@github.com:jawspeak/zipruby-compatibility-with-rubyzip-fork.git", :tag => "v0.3.7"
-  s.add_dependency("zipruby-compat", "~> 0.3.7")
+  #s.add_dependency("zipruby-compat", "~> 0.3.7")
 
   s.add_development_dependency("rake")
   s.add_development_dependency("rspec", "~> 2.7.0")

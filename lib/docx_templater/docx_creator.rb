@@ -60,7 +60,9 @@ module DocxTemplater
 
     def convert_img_format_to_jpeg(base64_str, img)
       image = MiniMagick::Image.from_blob(Base64.decode64(base64_str))
-      
+    
+      image.resize("#{img.width} x #{img.height}") if img.width && img.height
+
       img.width = image['width']
       img.height = image['height']
 

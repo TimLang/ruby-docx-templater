@@ -18,7 +18,7 @@ describe "integration test", :integration => true do
     it "generates a valid zip file (.docx)" do
 
       cached_images = {
-        :image0 => DocxTemplater::Image.new('test1.jpeg', Base64.encode64(File.open('/Users/sam/Pictures/test1.png'){|f| f.read})),
+        :image0 => DocxTemplater::Image.new('test1.jpeg', Base64.encode64(File.open('/Users/sam/Pictures/test1.png'){|f| f.read}), '450', '600'),
         #:image1 => DocxTemplater::Image.new('test2.jpeg', Base64.encode64(File.open('/Users/sam/Pictures/test2.png'){|f| f.read})),
         :image2 => DocxTemplater::Image.new('test3.jpeg', Base64.encode64(File.open('/Users/sam/Pictures/test3.png'){|f| f.read}))
         #:image3 => DocxTemplater::Image.new('test4.jpeg', Base64.encode64(File.open('/Users/sam/Pictures/test4.png'){|f| f.read}))

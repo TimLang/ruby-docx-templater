@@ -8,9 +8,8 @@ GIT
 PATH
   remote: .
   specs:
-    paper_docx_templater (0.1.4)
+    paper_docx_templater (0.2.4)
       nokogiri
-      zipruby-compat (~> 0.3.7)
 
 GEM
   remote: http://rubygems.org/
