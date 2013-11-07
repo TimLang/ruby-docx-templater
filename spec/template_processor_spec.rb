@@ -7,13 +7,65 @@ module DocxTemplater
       :subject => '高考模拟卷一',
       #:teacher => '土豪金',
       :teacher => '土豪金高端大气上档次哈哈',
+      :c_c => [
+        {
+          :c => '一'
+        },
+        {
+          :c => '二'
+        },
+        {
+          :c => '三'
+        },
+        {
+          :c => '四'
+        },
+        {
+          :c => '五'
+        },
+        {
+          :c => '六'
+        },
+        {
+          :c => '七'
+        },
+        {
+          :c => '八'
+        }
+      ],
+      :c_b => [
+        {
+          :b => ''
+        },
+        {
+          :b => ''
+        },
+        {
+          :b => ''
+        },
+        {
+          :b => ''
+        },
+        {
+          :b => ''
+        },
+        {
+          :b => ''
+        },
+        {
+          :b => ''
+        },
+        {
+          :b => ''
+        }
+      ],
       :questions => [
         {
           :title => '一、选择题（本题包括21小题，每小题给出的四个选项中，有的只有一个选项正确，有的有多个选项正确，全部选对的得6分，选对但不全的得3分，有选错的得0分）',
           :items => [
             {
               :content => '1. 人在恐惧、紧张时，在内脏神经的支配下，肾上腺髓质释放的肾上腺素增多，该激素可用于心脏，使心率加快。下列叙述错误的是${image2}（    ）',
-              :choice => ["A.sticks to them in their daily life", "B.makes them known to others", "C.understands their true values", "D.sees that others also follow them"]
+              :choice => ["A.stick&s to them in their daily life", "B.makes them known to others", "C.understands their true values", "D.sees that others also follow them"]
             },
             {
               :content => '2. 番茄幼苗在缺镁的培养液中培养一段时间后，与对照组相比，其叶片光合作用强度下降，原因是（    ）',

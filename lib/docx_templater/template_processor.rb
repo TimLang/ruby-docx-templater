@@ -21,7 +21,11 @@ module DocxTemplater
       #document = document.to_s
       data.each do |key, value|
         if value.class == Array
-          document = enter_multiple_values(document, key)
+          if key =~ /^c_([a-zA-Z]+)/
+            document = excute_cols(document, key)
+          else
+            document = enter_multiple_values(document, key)
+          end
         else
           generate_paragraph(document, key, value)
         end
@@ -167,6 +171,49 @@ module DocxTemplater
         end
       end
       (row_templates + [begin_row_template, end_row_template]).map(&:unlink)
+      xml.to_s
+    end
+  
+    def excute_cols document, key
+      xml = Nokogiri::XML(document)
+      begin_col = "#B_COL:#{key.to_s.upcase}#"
+      end_col = "#E_COL:#{key.to_s.upcase}#"
+      last_tbl = xml.search('//w:tbl').last
+      begin_col_template = last_tbl.xpath(".//w:tc[contains(., '#{begin_col}')]", xml.root.namespaces).first
+      end_col_template = last_tbl.xpath(".//w:tc[contains(., '#{end_col}')]", xml.root.namespaces).first
+      #DocxTemplater::log("begin_col_template: #{begin_col_template.to_s}")
+      #DocxTemplater::log("end_col_template: #{end_col_template.to_s}")
+      raise "unmatched template markers: #{begin_col} nil: #{begin_col_template.nil?}, #{end_col} nil: #{end_col_template.nil?}. This could be because word broke up tags with it's own xml entries. See README." unless begin_col_template && end_col_template
+
+      col_templates = []
+      col = begin_col_template.next_sibling
+      while (col != end_col_template)
+        col_templates.unshift(col)
+        col = col.next_sibling
+      end
+
+      data[key].reverse.each do |each_data|
+        DocxTemplater::log("each_data: #{each_data.inspect}")
+
+        # dup so we have new nodes to append
+        col_templates.map(&:dup).each do |new_col|
+          DocxTemplater::log("   new_col: #{new_col}")
+          innards = new_col.inner_html
+          if !(matches = innards.scan(/\$EACH:([^\$]+)\$/)).empty?
+            DocxTemplater::log("   matches: #{matches.inspect}")
+            matches.map(&:first).each do |each_key|
+              DocxTemplater::log("      each_key: #{each_key}")
+              innards.gsub!("$EACH:#{each_key}$", safe(each_data[each_key.downcase.to_sym]))
+            end
+          end
+          # change all the internals of the new node, even if we did not template
+          new_col.inner_html = innards
+          #DocxTemplater::log("new_col new innards: #{new_col.inner_html}")
+
+          begin_col_template.add_next_sibling(new_col)
+        end
+      end
+      (col_templates + [begin_col_template, end_col_template]).map(&:unlink)
       xml.to_s
     end
 
