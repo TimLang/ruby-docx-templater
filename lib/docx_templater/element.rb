@@ -23,6 +23,14 @@ module DocxTemplater
       end
     end
 
+    def create_tr_wrapper item
+      do_builder do |builder|
+        builder.tag!('w:tr', {'w:rsidR' => '004D5284', 'w:rsidTr' => '004D5284'}) do
+          builder << item
+        end
+      end
+    end
+
     def create_whilespace
       do_builder do |builder|
         builder.tag!('w:t', {'xml:space' => 'preserve'})
