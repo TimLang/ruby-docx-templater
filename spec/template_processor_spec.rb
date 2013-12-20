@@ -3,76 +3,103 @@ require 'spec_helper'
 
 module DocxTemplater
   module TestData
+
+    MOCK_DATA = lambda {
+      data = OpenStruct.new({
+        :subject => '答题卡'
+      })
+      choice = "[A]\n[B]\n[C]\n[D]"
+
+      ary = lambda { |i|
+        15.times.inject([]) do |r, a|
+          next r << {"c_#{i}".to_sym => choice} if i%2 == 0
+          r << {"c_#{i}".to_sym => @count+=1}
+        end
+      }
+
+      @count = 0
+      12.times do |i|
+        data.__send__("c_#{i+1}=", ary.call(i+1))
+      end
+
+      data.other = ([{:code => 'xxxx'}])
+
+      puts data.marshal_dump
+      return data.marshal_dump
+    }
+
+
     DATA = {
       :subject => '高考模拟卷一',
       #:teacher => '土豪金',
       :teacher => '土豪金高端大气上档次哈哈',
-      :c_c => [
-        {
-          :c => '一'
-        },
-        {
-          :c => '二'
-        },
-        {
-          :c => '三'
-        },
-        {
-          :c => '四'
-        },
-        {
-          :c => '五'
-        },
-        {
-          :c => '六'
-        },
-        {
-          :c => '七'
-        },
-        {
-          :c => '八'
-        }
-      ],
-      :c_b => [
-        {
-          :b => ''
-        },
-        {
-          :b => ''
-        },
-        {
-          :b => ''
-        },
-        {
-          :b => ''
-        },
-        {
-          :b => ''
-        },
-        {
-          :b => ''
-        },
-        {
-          :b => ''
-        },
-        {
-          :b => ''
-        }
-      ],
+      #:c_c => [
+        #{
+          #:c => '一'
+        #},
+        #{
+          #:c => '二'
+        #},
+        #{
+          #:c => '三'
+        #},
+        #{
+          #:c => '四'
+        #},
+        #{
+          #:c => '五'
+        #},
+        #{
+          #:c => '六'
+        #},
+        #{
+          #:c => '七'
+        #},
+        #{
+          #:c => '八'
+        #}
+      #],
+      #:c_b => [
+        #{
+          #:b => ''
+        #},
+        #{
+          #:b => ''
+        #},
+        #{
+          #:b => ''
+        #},
+        #{
+          #:b => ''
+        #},
+        #{
+          #:b => ''
+        #},
+        #{
+          #:b => ''
+        #},
+        #{
+          #:b => ''
+        #},
+        #{
+          #:b => ''
+        #}
+      #],
       :questions => [
         {
+          #:title => '',
           :title => '一、选择题（本题包括21小题，每小题给出的四个选项中，有的只有一个选项正确，有的有多个选项正确，全部选对的得6分，选对但不全的得3分，有选错的得0分）',
           :items => [
             {
               :content => '1. 人在恐惧、紧张时，在内脏神经的支配下，肾上腺髓质释放的肾上腺素增多，该激素可用于心脏，使心率加快。下列叙述错误的是${image2}（    ）',
-              :choice => ["A.stick&s to them in their daily life", "B.makes them known to others", "C.understands their true values", "D.sees that others also follow them"]
+              :choice => ["27. A.=   B.<   C.>   ", "28. A.=   B.<   C.>   ", "29. A.=   B.<   C.>   ", "30. A.=   B.<   C.>   "]
             },
             {
-              :content => '2. 番茄幼苗在缺镁的培养液中培养一段时间后，与对照组相比，其叶片光合作用强度下降，原因是（    ）',
+              :content => "1. Part I Writing\nFor this part,\nyou are allowed 30 minutes${image2} to write a short essay entitled Nothing Succeeds ${image3}${image4}Without a Strong Will by commenting on the humorous saying, \"Quitting smoking is ${image5}the easiest thing in the world. I've done it hundreds of times.\" You should write at least 120 words but no more than 180 ${image6}words.(本题30分)",
               :choice => ["A.She wants to take the most direct way.", "B.She may be late for the football game.", "C.She is worried about missing her flight.", "D.She is currently caught in a traffic jam."]
             },
             {
-              :content => '2. 番茄幼苗在缺镁的培养液中培养一段时间后，与对照组相比，其叶片光合作用强度下降，原因是（    ）',
+              :content => "2. 番茄幼苗在缺镁的培养液中培养一段时间\n，与对照组相比，其叶片光合作用强度下降，原因是dasdsadsadsdsdsadsdsadasdasdsadsadsadsad(本题30分)",
               :choice => ["A.She wants to take the most direct way.", "B.She may be late for the football game.", "C.She is worried about missing her flight.", "D.She is currently caught in a traffic jam."]
             },
             {
@@ -123,10 +150,7 @@ module DocxTemplater
               （3）若这些离子中的最轻离子的质量等于离子甲质量的一半，而离子乙的质量是最大的，问磁场边界上什么区域内可能有离子到达。
               '
             },{
-                :content => '2．【生物——选修1：生物技术实践】(8分) 为了探究6―BA和IAA对某些菊花品种茎尖外植物再生丛芽的影响，某研究小组在MS培养基中加入6―BA和IAA，配制成四种培养基(见下表)，灭菌后分别接种数量相同、生长状态一致、消毒后地的尖外植体，在适宜条件下培养一段时间后，统计再生丛芽外植体的比率(m)，以及再生丛芽外植体上的丛芽平均数(n)，结果如下表。\n
-                (2)在该实验中，自变量是       ，因变量是        ，自变量的取值范围是            。\n
-                (3)从实验结果可知，诱导从芽总数量少的培养基是          号培养基。\n
-                (4)为了诱导该菊花试管菌生根，培养基中一般不加入          。(填“6―BA”或“IAA”)。'
+                :content => "pppppppp${table:${image2},b,c,d,e,f}qqqqqqqqqq"
               }
           ]
         }

@@ -6,6 +6,7 @@ Bundler.setup
 require 'rspec'
 require 'nokogiri'
 require 'fileutils'
+require 'ostruct'
 
 require 'docx_templater'
 

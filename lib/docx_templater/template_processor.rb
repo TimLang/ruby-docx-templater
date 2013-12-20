@@ -5,6 +5,8 @@ module DocxTemplater
   class TemplateProcessor
     attr_reader :data, :escape_html
 
+    include DocxTemplater::Element
+
     LOOP_PLACE_HOLDER = :items
        # data is expected to be a hash of symbols => string or arrays of hashes.
     def initialize(data, cached_images, escape_html=true)
@@ -21,7 +23,7 @@ module DocxTemplater
       #document = document.to_s
       data.each do |key, value|
         if value.class == Array
-          if key =~ /^c_([a-zA-Z]+)/
+          if key =~ /^c_(\d+)/
             document = excute_cols(document, key)
           else
             document = enter_multiple_values(document, key)
@@ -30,7 +32,7 @@ module DocxTemplater
           generate_paragraph(document, key, value)
         end
       end
-      document
+      clean_unreplaced_tags(document)
     end
 
     def process_media document, images
@@ -53,19 +55,36 @@ module DocxTemplater
 
     private
 
+    def clean_unreplaced_tags document
+      xml = Nokogiri::XML(document)
+      last_tbl = xml.search('//w:tbl').find{|a| !a.xpath(".//w:tc[contains(., '#B_COL')]", xml.root.namespaces).empty?}
+      col_templates = last_tbl.xpath(".//w:tc[contains(., '#B_COL')]", xml.root.namespaces).each do |c|
+        c.parent.unlink
+      end if last_tbl
+      xml.to_s
+    end
+
     def generate_paragraph document, key, value
       document.gsub!("$#{key.to_s.upcase}$", excute_newline(value).join) 
     end
 
     def generate_each_paragraph document, key, value
-      document.gsub("$EACH:#{key.to_s.upcase}$", excute_newline(value).join)
+      if value =~ /\n/
+        document.gsub(/<w:p.*?>[\s\S]*?<\/w:p>/, excute_newline(value).join)
+      else
+        document.gsub("$EACH:#{key.to_s.upcase}$", excute_newline(value).join)
+      end
     end
 
 
     def excute_newline value
-      if value =~ /\n/
-        value.split(/\n/).inject([]) do |result, str|
-          result << PARAGRAPH_ROW.gsub(/\$text\$/, (excute_nested_image_with_text(str)).join)
+      if value =~ /(\${table:.+})|\n/
+        value.split(/(\${table:.+})|\n/).inject([]) do |result, str|
+          if str =~ /(\${table:.+})/
+            result << create_paragraph(excute_nested_table(str).join)
+          else
+            result << create_paragraph(excute_nested_image_with_text(str).join)
+          end
         end
       else
         [excute_nested_image_with_text(value)]
@@ -75,7 +94,7 @@ module DocxTemplater
     def excute_nested_image_with_text value
       value.split(/(\${image\d+})/).inject([]) do |result, str|
         unless str =~ /\${image\d+}/
-          result << TEXT_ROW.gsub('$text$', safe(str))
+          result << create_text(safe(str))
         else
           img = @cached_images[str.gsub(/\${(\w+)}/, '\1').to_sym]
           if img
@@ -84,8 +103,19 @@ module DocxTemplater
               .gsub(/\$image_height\$/, get_word_image_dimension(img.height))
               .gsub(/\$image_name\$/, 'tim')
           else
-            result << TEXT_ROW.gsub('$text$', '')
+            result << create_text('')
           end
+        end
+      end
+    end
+    
+    def excute_nested_table value
+      table_regex = /(\${table:.+})/
+      value.split(table_regex).inject([]) do |result ,str|
+        unless str =~ table_regex
+          result << create_text(safe(str))
+        else
+          result << TABLE_ROW
         end
       end
     end
@@ -137,10 +167,11 @@ module DocxTemplater
               if each_key =~ /items_(.+)/i 
                 cache_key = each_key.to_sym
                 @items_cache[cache_key] = TR_WRAPPER_ROW.gsub(/\$text\$/, innards)
+                #@items_cache[cache_key] = innards
                 each_data[LOOP_PLACE_HOLDER].reverse.each_with_index do |e, i|
                   innards = [] if i == 0
                   obj_key = (each_key =~ /items_(.+)/i) ? each_key.gsub(/items_(.+)/i, $1).downcase : ''
-                  innards << BLANK_ROW
+                  #innards << BLANK_ROW
                   if e[:choice]
                     #indentation for choices
                     tpl = @items_cache[cache_key].sub('<w:pPr>', " <w:pPr>\n        <w:ind w:leftChars=\"100\" w:left=\"180\"/>")
@@ -155,7 +186,8 @@ module DocxTemplater
                   innards << generate_each_paragraph(@items_cache[cache_key], each_key, safe(e[obj_key.to_sym]))
                 end if each_data[LOOP_PLACE_HOLDER]
               else
-                innards = generate_each_paragraph(innards, each_key, safe(each_data[each_key.downcase.to_sym]))
+                value = safe(each_data[each_key.downcase.to_sym])
+                innards = value=='' ? '' : (BLANK_ROW + generate_each_paragraph(new_row.to_html, each_key, value))
               end
             end
           end
@@ -178,7 +210,7 @@ module DocxTemplater
       xml = Nokogiri::XML(document)
       begin_col = "#B_COL:#{key.to_s.upcase}#"
       end_col = "#E_COL:#{key.to_s.upcase}#"
-      last_tbl = xml.search('//w:tbl').last
+      last_tbl = xml.search('//w:tbl').find{|a| !a.xpath(".//w:tc[contains(., '#{begin_col}')]", xml.root.namespaces).empty?}
       begin_col_template = last_tbl.xpath(".//w:tc[contains(., '#{begin_col}')]", xml.root.namespaces).first
       end_col_template = last_tbl.xpath(".//w:tc[contains(., '#{end_col}')]", xml.root.namespaces).first
       #DocxTemplater::log("begin_col_template: #{begin_col_template.to_s}")
@@ -193,17 +225,18 @@ module DocxTemplater
       end
 
       data[key].reverse.each do |each_data|
-        DocxTemplater::log("each_data: #{each_data.inspect}")
+        #DocxTemplater::log("each_data: #{each_data.inspect}")
 
         # dup so we have new nodes to append
         col_templates.map(&:dup).each do |new_col|
-          DocxTemplater::log("   new_col: #{new_col}")
+          #DocxTemplater::log("   new_col: #{new_col}")
           innards = new_col.inner_html
           if !(matches = innards.scan(/\$EACH:([^\$]+)\$/)).empty?
-            DocxTemplater::log("   matches: #{matches.inspect}")
+            #DocxTemplater::log("   matches: #{matches.inspect}")
             matches.map(&:first).each do |each_key|
-              DocxTemplater::log("      each_key: #{each_key}")
-              innards.gsub!("$EACH:#{each_key}$", safe(each_data[each_key.downcase.to_sym]))
+              #DocxTemplater::log("      each_key: #{each_key}")
+              innards = generate_each_paragraph(innards, each_key, safe(each_data[each_key.downcase.to_sym]))
+              #innards.gsub!("$EACH:#{each_key}$", safe(each_data[each_key.downcase.to_sym]))
             end
           end
           # change all the internals of the new node, even if we did not template
@@ -280,6 +313,13 @@ module DocxTemplater
                 </wp:inline>
               </w:drawing>
             </w:r>'
-
   end
+
+  TABLE_ROW = '<w:r>
+              <w:rPr>
+                <w:rFonts w:hint="eastAsia"/>
+                <w:noProof/>
+              </w:rPr>
+              <w:tbl><w:tblPr><w:tblStyle w:val="a5"/><w:tblW w:w="0" w:type="auto"/><w:tblLook w:val="04A0"/></w:tblPr><w:tblGrid><w:gridCol w:w="2763"/><w:gridCol w:w="2764"/><w:gridCol w:w="2764"/></w:tblGrid><w:tr w:rsidR="006217C8" w:rsidTr="006217C8"><w:tc><w:tcPr><w:tcW w:w="2763" w:type="dxa"/></w:tcPr><w:p w:rsidR="006217C8" w:rsidRDefault="006217C8"><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr><w:t>1</w:t></w:r></w:p></w:tc><w:tc><w:tcPr><w:tcW w:w="2764" w:type="dxa"/></w:tcPr><w:p w:rsidR="006217C8" w:rsidRDefault="006217C8"><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr><w:t>2</w:t></w:r></w:p></w:tc><w:tc><w:tcPr><w:tcW w:w="2764" w:type="dxa"/></w:tcPr><w:p w:rsidR="006217C8" w:rsidRDefault="006217C8"><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr><w:t>3</w:t></w:r></w:p></w:tc></w:tr><w:tr w:rsidR="006217C8" w:rsidTr="006217C8"><w:tc><w:tcPr><w:tcW w:w="2763" w:type="dxa"/></w:tcPr><w:p w:rsidR="006217C8" w:rsidRDefault="006217C8"><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr><w:t>4</w:t></w:r></w:p></w:tc><w:tc><w:tcPr><w:tcW w:w="2764" w:type="dxa"/></w:tcPr><w:p w:rsidR="006217C8" w:rsidRDefault="006217C8"><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr><w:t>5</w:t></w:r></w:p></w:tc><w:tc><w:tcPr><w:tcW w:w="2764" w:type="dxa"/></w:tcPr><w:p w:rsidR="006217C8" w:rsidRDefault="006217C8"><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr><w:t>6</w:t></w:r></w:p></w:tc></w:tr></w:tbl>
+</w:r>'
 end

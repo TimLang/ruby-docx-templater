@@ -13,6 +13,7 @@ module DocxTemplater
   extend self
 end
 
+require 'docx_templater/element'
 require 'docx_templater/template_processor'
 require 'docx_templater/docx_creator'
 require 'docx_templater/image'
