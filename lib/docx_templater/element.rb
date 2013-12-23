@@ -82,6 +82,49 @@ module DocxTemplater
       end
     end
 
+    def create_image embed_id, name, width, height
+      do_builder do |builder|
+        builder.tag!('w:r') do
+          builder.tag!('w:rPr') do
+            builder.tag!('w:rFonts', {'w:hint' => 'eastAsia'})
+            builder.tag!('w:noProof')
+          end
+          builder.tag!('w:drawing') do
+            builder.tag!('wp:inline', {'distT'=>'0', 'distB'=>'0','distL'=>'0','distR'=>'0'}) do
+              builder.tag!('wp:extent',{'cx'=>width,'cy'=>height})
+              builder.tag!('wp:effectExtent',{'l'=>'19050','t'=>'0','r'=>'7990','b'=>'0'})
+              builder.tag!('wp:docPr',{'id'=>'2','name'=>name,'descr'=>name})
+              builder.tag!('wp:cNvGraphicFramePr') do
+                builder.tag!('a:graphicFrameLocks', {'xmlns:a'=>'http://schemas.openxmlformats.org/drawingml/2006/main','noChangeAspect'=>'1'})
+              end
+              builder.tag!('a:graphic',{'xmlns:a'=>'http://schemas.openxmlformats.org/drawingml/2006/main'}) do
+                builder.tag!('a:graphicData',{'uri' => 'http://schemas.openxmlformats.org/drawingml/2006/picture'}) do
+                  builder.tag!('pic:pic',{'xmlns:pic'=>'http://schemas.openxmlformats.org/drawingml/2006/picture'}) do
+                    builder.tag!('pic:nvPicPr') do
+                      builder.tag!('pic:cNvPr', {'id'=>'0','name'=>name})
+                      builder.tag!('pic:cNvPicPr')
+                    end
+                    builder.tag!('pic:blipFill') do
+                      builder.tag!('a:blip',{'r:embed'=>embed_id,'cstate'=>'print'})
+                      builder.tag!('a:stretch'){builder.tag!('a:fillRect')}
+                    end
+                    builder.tag!('pic:spPr') do
+                      builder.tag!('a:xfrm') do
+                        builder.tag!('a:off',{'x'=>'0','y'=>'0'})
+                        builder.tag!('a:ext',{'cx'=>width,'cy'=>height})
+                      end
+                      builder.tag!('a:prstGeom',{'prst'=>'rect'}){builder.tag!('a:avLst')}
+                    end
+                  end
+                end
+
+              end
+            end
+          end
+        end
+      end
+    end
+
     def do_builder
       yield Builder::XmlMarkup.new
     end
