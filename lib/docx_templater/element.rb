@@ -5,6 +5,8 @@ module DocxTemplater
 
   module Element
 
+    GRID_SPAN_REGEX = /(__{(\d+)}__)/
+
     def create_paragraph element
       do_builder do |builder|
         xml = builder.tag!('w:p', {'w:rsidR' => '0019258A', 'w:rsidRDefault' => '00214805'}) do
@@ -37,6 +39,7 @@ module DocxTemplater
       end
     end
 
+    #=~ 20.3*136=2763
     def create_table rows, width="2763"
       return nil if !rows.is_a?(Array) || !rows[0].is_a?(Array)
       do_builder do |builder|
@@ -64,11 +67,14 @@ module DocxTemplater
                 row.each do |col|
                   #TD
                   builder.tag!('w:tc') do
-                    builder.tag!('w:tcPr'){builder.tag!('w:tcW', {'w:w' => width, 'w:type' => 'dxa'})}
+                    builder.tag!('w:tcPr') do
+                      builder.tag!('w:tcW', {'w:w' => width, 'w:type' => 'dxa'})
+                      builder.tag!('w:gridSpan', {'w:val'=>$2}) if col =~ GRID_SPAN_REGEX
+                    end
                     builder.tag!('w:p', {'w:rsidR' => '006217C8', 'w:rsidRDefault' => '006217C8'}) do
                       builder.tag!('w:r') do
                         builder.tag!('w:rPr'){builder.tag!('w:rFonts', {'w:hint' => 'eastAsia'})}
-                        builder.tag!('w:t') { builder << col.to_s}
+                        builder.tag!('w:t') { builder << col.sub(GRID_SPAN_REGEX, '').to_s}
                       end
                     end
                   end
