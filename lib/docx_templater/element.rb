@@ -70,6 +70,11 @@ module DocxTemplater
                     builder.tag!('w:tcPr') do
                       builder.tag!('w:tcW', {'w:w' => width, 'w:type' => 'dxa'})
                       builder.tag!('w:gridSpan', {'w:val'=>$2}) if col =~ GRID_SPAN_REGEX
+                      if col =~ /_\${\d+}_/
+                        builder.tag!('w:vMerge',{'w:val'=>'restart'})
+                      elsif col =~ /{_}/
+                        builder.tag!('w:vMerge')
+                      end
                     end
                     builder.tag!('w:p', {'w:rsidR' => '006217C8', 'w:rsidRDefault' => '006217C8'}) do
                       builder.tag!('w:r') do
