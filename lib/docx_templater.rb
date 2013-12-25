@@ -13,7 +13,9 @@ module DocxTemplater
   extend self
 end
 
+require 'docx_templater/ext/array'
+require 'docx_templater/entity/table'
 require 'docx_templater/element'
 require 'docx_templater/template_processor'
 require 'docx_templater/docx_creator'
-require 'docx_templater/image'
+require 'docx_templater/entity/image'

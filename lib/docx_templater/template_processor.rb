@@ -1,6 +1,5 @@
 # -*- encoding : utf-8 -*-
 require 'debugger'
-
 module DocxTemplater
   class TemplateProcessor
     attr_reader :data, :escape_html
@@ -98,10 +97,7 @@ module DocxTemplater
         else
           img = @cached_images[str.gsub(/\${(\w+)}/, '\1').to_sym]
           if img
-            result << DRAWING_ROW.gsub(/\$embed_id\$/, img.embed_id)
-              .gsub(/\$image_width\$/, get_word_image_dimension(img.width))
-              .gsub(/\$image_height\$/, get_word_image_dimension(img.height))
-              .gsub(/\$image_name\$/, 'tim')
+            result << create_image(img.embed_id, 'Tim', get_word_image_dimension(img.width), get_word_image_dimension(img.height))
           else
             result << create_text('')
           end
@@ -115,7 +111,11 @@ module DocxTemplater
         unless str =~ table_regex
           result << create_text(safe(str))
         else
-          result << TABLE_ROW
+          result << create_table(
+            eval(value.sub(/\${table:(.+)}/, '\1')).deep_map! do |a| 
+              excute_nested_image_with_text(safe(a)).join
+            end
+          )
         end
       end
     end
@@ -166,7 +166,7 @@ module DocxTemplater
               #DocxTemplater::log("      each_key: #{each_key}")
               if each_key =~ /items_(.+)/i 
                 cache_key = each_key.to_sym
-                @items_cache[cache_key] = TR_WRAPPER_ROW.gsub(/\$text\$/, innards)
+                @items_cache[cache_key] = create_tr_wrapper(innards)
                 #@items_cache[cache_key] = innards
                 each_data[LOOP_PLACE_HOLDER].reverse.each_with_index do |e, i|
                   innards = [] if i == 0
@@ -252,74 +252,8 @@ module DocxTemplater
 
     # hard coding, my god!
 
-    SPACE_TEXT = '<w:t xml:space="preserve">  </w:t>'
-
     BLANK_ROW = "<w:tr w:rsidR=\"00D779AB\" w:rsidTr=\"00B812D2\">\n        <w:tc>\n          <w:tcPr>\n            <w:tcW w:w=\"8522\" w:type=\"dxa\"/>\n          </w:tcPr>\n          <w:p w:rsidR=\"00D779AB\" w:rsidRDefault=\"00D779AB\" w:rsidP=\"00C44DF6\">\n            <w:pPr>\n              <w:rPr>\n                <w:rFonts w:hint=\"eastAsia\"/>\n              </w:rPr>\n            </w:pPr>\n            <w:r>\n              <w:rPr>\n                <w:rFonts w:hint=\"eastAsia\"/>\n              </w:rPr>\n              <w:t></w:t>\n            </w:r>\n          </w:p>\n        </w:tc>\n      </w:tr>"
 
-    TR_WRAPPER_ROW = "\n <w:tr w:rsidR=\"004D5284\" w:rsidTr=\"004D5284\">\n $text$ </w:tr>\n"
+     end
 
-    TEXT_ROW = '<w:r>
-              <w:rPr>
-                <w:rFonts w:hint="eastAsia"/>
-              </w:rPr>
-              <w:t>$text$</w:t>
-            </w:r>'
-
-    PARAGRAPH_ROW = '<w:p w:rsidR="0019258A" w:rsidRDefault="00214805">
-	<w:pPr>
-		<w:rPr>
-			<w:rFonts w:hint="eastAsia"/>
-		</w:rPr>
-	</w:pPr>$text$</w:p>'
-
-    DRAWING_ROW = '<w:r>
-              <w:rPr>
-                <w:rFonts w:hint="eastAsia"/>
-                <w:noProof/>
-              </w:rPr>
-              <w:drawing>
-                <wp:inline distT="0" distB="0" distL="0" distR="0">
-                  <wp:extent cx="$image_width$" cy="$image_height$"/>
-                  <wp:effectExtent l="19050" t="0" r="7990" b="0"/>
-                  <wp:docPr id="2" name="图片" descr="$image_name$"/>
-                  <wp:cNvGraphicFramePr>
-                    <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
-                  </wp:cNvGraphicFramePr>
-                  <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
-                    <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
-                      <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
-                        <pic:nvPicPr>
-                          <pic:cNvPr id="0" name="$image_name$"/>
-                          <pic:cNvPicPr/>
-                        </pic:nvPicPr>
-                        <pic:blipFill>
-                          <a:blip r:embed="$embed_id$" cstate="print"/>
-                          <a:stretch>
-                            <a:fillRect/>
-                          </a:stretch>
-                        </pic:blipFill>
-                        <pic:spPr>
-                          <a:xfrm>
-                            <a:off x="0" y="0"/>
-                            <a:ext cx="$image_width$" cy="$image_height$"/>
-                          </a:xfrm>
-                          <a:prstGeom prst="rect">
-                            <a:avLst/>
-                          </a:prstGeom>
-                        </pic:spPr>
-                      </pic:pic>
-                    </a:graphicData>
-                  </a:graphic>
-                </wp:inline>
-              </w:drawing>
-            </w:r>'
   end
-
-  TABLE_ROW = '<w:r>
-              <w:rPr>
-                <w:rFonts w:hint="eastAsia"/>
-                <w:noProof/>
-              </w:rPr>
-              <w:tbl><w:tblPr><w:tblStyle w:val="a5"/><w:tblW w:w="0" w:type="auto"/><w:tblLook w:val="04A0"/></w:tblPr><w:tblGrid><w:gridCol w:w="2763"/><w:gridCol w:w="2764"/><w:gridCol w:w="2764"/></w:tblGrid><w:tr w:rsidR="006217C8" w:rsidTr="006217C8"><w:tc><w:tcPr><w:tcW w:w="2763" w:type="dxa"/></w:tcPr><w:p w:rsidR="006217C8" w:rsidRDefault="006217C8"><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr><w:t>1</w:t></w:r></w:p></w:tc><w:tc><w:tcPr><w:tcW w:w="2764" w:type="dxa"/></w:tcPr><w:p w:rsidR="006217C8" w:rsidRDefault="006217C8"><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr><w:t>2</w:t></w:r></w:p></w:tc><w:tc><w:tcPr><w:tcW w:w="2764" w:type="dxa"/></w:tcPr><w:p w:rsidR="006217C8" w:rsidRDefault="006217C8"><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr><w:t>3</w:t></w:r></w:p></w:tc></w:tr><w:tr w:rsidR="006217C8" w:rsidTr="006217C8"><w:tc><w:tcPr><w:tcW w:w="2763" w:type="dxa"/></w:tcPr><w:p w:rsidR="006217C8" w:rsidRDefault="006217C8"><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr><w:t>4</w:t></w:r></w:p></w:tc><w:tc><w:tcPr><w:tcW w:w="2764" w:type="dxa"/></w:tcPr><w:p w:rsidR="006217C8" w:rsidRDefault="006217C8"><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr><w:t>5</w:t></w:r></w:p></w:tc><w:tc><w:tcPr><w:tcW w:w="2764" w:type="dxa"/></w:tcPr><w:p w:rsidR="006217C8" w:rsidRDefault="006217C8"><w:r><w:rPr><w:rFonts w:hint="eastAsia"/></w:rPr><w:t>6</w:t></w:r></w:p></w:tc></w:tr></w:tbl>
-</w:r>'
-end
