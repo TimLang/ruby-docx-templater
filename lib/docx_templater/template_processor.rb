@@ -171,7 +171,7 @@ module DocxTemplater
                 each_data[LOOP_PLACE_HOLDER].reverse.each_with_index do |e, i|
                   innards = [] if i == 0
                   obj_key = (each_key =~ /items_(.+)/i) ? each_key.gsub(/items_(.+)/i, $1).downcase : ''
-                  #innards << BLANK_ROW
+                  innards << create_blank_tr
                   if e[:choice]
                     #indentation for choices
                     tpl = @items_cache[cache_key].sub('<w:pPr>', " <w:pPr>\n        <w:ind w:leftChars=\"100\" w:left=\"180\"/>")
@@ -249,11 +249,5 @@ module DocxTemplater
       (col_templates + [begin_col_template, end_col_template]).map(&:unlink)
       xml.to_s
     end
-
-    # hard coding, my god!
-
-    BLANK_ROW = "<w:tr w:rsidR=\"00D779AB\" w:rsidTr=\"00B812D2\">\n        <w:tc>\n          <w:tcPr>\n            <w:tcW w:w=\"8522\" w:type=\"dxa\"/>\n          </w:tcPr>\n          <w:p w:rsidR=\"00D779AB\" w:rsidRDefault=\"00D779AB\" w:rsidP=\"00C44DF6\">\n            <w:pPr>\n              <w:rPr>\n                <w:rFonts w:hint=\"eastAsia\"/>\n              </w:rPr>\n            </w:pPr>\n            <w:r>\n              <w:rPr>\n                <w:rFonts w:hint=\"eastAsia\"/>\n              </w:rPr>\n              <w:t></w:t>\n            </w:r>\n          </w:p>\n        </w:tc>\n      </w:tr>"
-
-     end
 
   end

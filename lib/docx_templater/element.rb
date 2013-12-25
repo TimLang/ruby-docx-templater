@@ -41,6 +41,21 @@ module DocxTemplater
       end
     end
 
+    def create_blank_tr
+      create_tr_wrapper(
+        lambda {
+          do_builder do |builder|
+            builder.tag!('w:tc') do
+              builder.tag!('w:tcPr') do
+                builder.tag!('w:tcW', {'w:type'=>'dxa'})
+              end
+              builder << create_paragraph(create_text(''))
+            end
+          end
+        }.call
+      )
+    end
+
     #=~ 20.3*136=2763
     def create_table rows, width="2763"
       return nil if !rows.is_a?(Array) || !rows[0].is_a?(Array)
