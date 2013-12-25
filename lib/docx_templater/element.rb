@@ -6,6 +6,8 @@ module DocxTemplater
   module Element
 
     GRID_SPAN_REGEX = /(__{(\d+)}__)/
+    GRID_ROW_SPAN_REGEX = /_\${\d+}\$_/ 
+    GRID_WIDTH_REGEX = /_@(\d+)@_/
 
     def create_paragraph element
       do_builder do |builder|
@@ -52,25 +54,30 @@ module DocxTemplater
             builder.tag!('w:tblPr') do
               builder.tag!('w:tblStyle', {'w:val' => 'a5'})
               builder.tag!('w:tblW', {'w:w' => '0', 'w:type' => 'auto'})
+              builder.tag!('w:tblW')
               builder.tag!('w:tblLook', {'w:val' => '04A0'})
             end
             builder.tag!('w:tblGrid') do
               rows.size.times do
-                builder.tag!('w:gridCol', {'w:w' => width})
+                #builder.tag!('w:gridCol', {'w:w' => width})
+                builder.tag!('w:gridCol')
               end
             end
 
             rows.each do |row|
               #TR
               builder.tag!('w:tr', {'w:rsidR' => '006217C8', 'w:rsidTr' => '006217C8'}) do
-
+                builder.tag!('w:trPr') do
+                  builder.tag!('w:cantSplit')
+                end
                 row.each do |col|
                   #TD
                   builder.tag!('w:tc') do
                     builder.tag!('w:tcPr') do
+                      width = $1 if col =~ GRID_WIDTH_REGEX 
                       builder.tag!('w:tcW', {'w:w' => width, 'w:type' => 'dxa'})
                       builder.tag!('w:gridSpan', {'w:val'=>$2}) if col =~ GRID_SPAN_REGEX
-                      if col =~ /_\${\d+}_/
+                      if col =~ GRID_ROW_SPAN_REGEX
                         builder.tag!('w:vMerge',{'w:val'=>'restart'})
                       elsif col =~ /{_}/
                         builder.tag!('w:vMerge')
@@ -79,7 +86,7 @@ module DocxTemplater
                     builder.tag!('w:p', {'w:rsidR' => '006217C8', 'w:rsidRDefault' => '006217C8'}) do
                       builder.tag!('w:r') do
                         builder.tag!('w:rPr'){builder.tag!('w:rFonts', {'w:hint' => 'eastAsia'})}
-                        builder.tag!('w:t') { builder << col.sub(GRID_SPAN_REGEX, '').to_s}
+                        builder.tag!('w:t') { builder << col.sub(GRID_SPAN_REGEX, '').sub(GRID_ROW_SPAN_REGEX, '').sub(GRID_WIDTH_REGEX, '').sub(/{_}/, '').to_s}
                       end
                     end
                   end
