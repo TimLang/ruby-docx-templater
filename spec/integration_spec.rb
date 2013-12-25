@@ -12,6 +12,7 @@ describe "integration test", :integration => true do
   #let(:input_file) { "#{base_path}/ExampleTemplate.docx" }
   let(:output_dir) { "#{base_path}/tmp" }
   let(:output_file) { "#{output_dir}/#{Time.now.to_i}.docx" }
+
   before do 
     FileUtils.rm_rf(output_dir) if File.exists?(output_dir)
     Dir.mkdir(output_dir)
@@ -21,11 +22,10 @@ describe "integration test", :integration => true do
     it "generates a valid zip file (.docx)" do
 
       cached_images = {
-        :image0 => DocxTemplater::Image.new('test1.jpeg', Base64.encode64(File.open('/Users/sam/Pictures/test1.png'){|f| f.read}), '450', '600'),
-        #:image1 => DocxTemplater::Image.new('test2.jpeg', Base64.encode64(File.open('/Users/sam/Pictures/test2.png'){|f| f.read})),
-        :image2 => DocxTemplater::Image.new('test3.jpeg', Base64.encode64(File.open('/Users/sam/Pictures/test3.png'){|f| f.read}))
-        #:image3 => DocxTemplater::Image.new('test4.jpeg', Base64.encode64(File.open('/Users/sam/Pictures/test4.png'){|f| f.read}))
+        :image0 => DocxTemplater::Image.new('test1.jpeg', Base64.encode64(File.open("#{Dir.pwd}/spec/images/test1.png"){|f| f.read}), '450', '600'),
+        :image2 => DocxTemplater::Image.new('test3.jpeg', Base64.encode64(File.open("#{Dir.pwd}/spec/images/test3.png"){|f| f.read}))
       }
+
       DocxTemplater::DocxCreator.new(input_file, data, cached_images, false).generate_docx_file(output_file)
 
       archive = ZipRuby::Archive.open(output_file)
