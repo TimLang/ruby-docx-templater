@@ -77,9 +77,9 @@ module DocxTemplater
 
 
     def excute_newline value
-      if value =~ /(\${table:.+})|\n/
-        value.split(/(\${table:.+})|\n/).inject([]) do |result, str|
-          if str =~ /(\${table:.+})/
+      if value =~ /(_``table:.+?``_)|\n/
+        value.split(/(_``table:.+?``_)|\n/).inject([]) do |result, str|
+          if str =~ /(_``table:.+?``_)/
             result << create_paragraph(excute_nested_table(str).join)
           else
             result << create_paragraph(excute_nested_image_with_text(str).join)
@@ -106,16 +106,20 @@ module DocxTemplater
     end
     
     def excute_nested_table value
-      table_regex = /(\${table:.+})/
+      table_regex = /(_``table:.+``_)/
       value.split(table_regex).inject([]) do |result ,str|
         unless str =~ table_regex
           result << create_text(safe(str))
         else
-          result << create_table(
-            eval(value.sub(/\${table:(.+)}/, '\1')).deep_map! do |a| 
-              excute_nested_image_with_text(safe(a)).join
-            end
-          )
+          begin
+            result << create_table(
+              eval(value.sub(/_``table:(.+)``_/, '\1')).deep_map! do |a| 
+                excute_nested_image_with_text(safe(a)).join
+              end
+            )
+          rescue SyntaxError => e
+            result << create_text('')
+          end
         end
       end
     end
@@ -187,7 +191,7 @@ module DocxTemplater
                 end if each_data[LOOP_PLACE_HOLDER]
               else
                 value = safe(each_data[each_key.downcase.to_sym])
-                innards = value=='' ? '' : (BLANK_ROW + generate_each_paragraph(new_row.to_html, each_key, value))
+                innards = value=='' ? '' : (create_blank_tr + generate_each_paragraph(new_row.to_html, each_key, value))
               end
             end
           end
@@ -251,3 +255,4 @@ module DocxTemplater
     end
 
   end
+end

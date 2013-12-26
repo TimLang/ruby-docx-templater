@@ -57,6 +57,7 @@ module DocxTemplater
     end
 
     #=~ 20.3*136=2763
+    #see more http://officeopenxml.com/WPtableGrid.php
     def create_table rows, width="2763"
       return nil if !rows.is_a?(Array) || !rows[0].is_a?(Array)
       do_builder do |builder|
