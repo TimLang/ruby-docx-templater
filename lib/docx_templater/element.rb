@@ -70,7 +70,6 @@ module DocxTemplater
             builder.tag!('w:tblPr') do
               builder.tag!('w:tblStyle', {'w:val' => 'a5'})
               builder.tag!('w:tblW', {'w:w' => '0', 'w:type' => 'auto'})
-              builder.tag!('w:tblW')
               builder.tag!('w:tblLook', {'w:val' => '04A0'})
             end
             builder.tag!('w:tblGrid') do
